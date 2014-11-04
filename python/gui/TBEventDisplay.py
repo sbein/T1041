@@ -241,28 +241,45 @@ class TBEventDisplay:
         self.util.accumulate = False   
         self.util.stealthmode = False  
         self.util.filename = self.filename
-        #WC trace bools:
-        self.util.showBoard112 = True
-        self.util.showBoard115 = True
-        self.util.showBoard116 = True
-        self.util.showBoard117 = True
+        #WF trace bools:
+        self.wfelements = [] #list built in util.py::NotePad
+        WFbuttons = []
+        for b in range(4):
+            buttonname = 'toggleShowBoard'+str(b)
+            WFbuttons.append(("Board    "+str(b), buttonname, buttonname,True))
+            self.util.showBoard.push_back(True)
         #WC bools:
         self.util.WC_showIThits = True
         self.util.WC_showQhits = True
-        #track struct members:
-        self.util.x1hit = 10
-        self.util.x2hit = 1
-        self.util.y1hit = 10
-        self.util.y2hit = 4
+        #FiberADC bools
+        self.util.FADC_showRecHits = True
+        self.util.FADC_showAllHits = False
         #3D bools
         self.util._3D_showWC1 = True
         self.util._3D_showWC2 = True
         self.util._3D_isolateClusters = False
         self.util.needsAboost = False
+        self.util.showRecTracks = True
+        self.util.showAllTracks = False
+        #track struct members:
+        self.util.x1hit = 10
+        self.util.x2hit = 1
+        self.util.y1hit = 10
+        self.util.y2hit = 4
 
-        WFbuttons = [('Board 117','toggleShowBoard117','toggleShowBoard117',True),('Board 116','toggleShowBoard116','toggleShowBoard116',True),('Board 115','toggleShowBoard115','toggleShowBoard115',True),('Board 112','toggleShowBoard112','toggleShowBoard112',True)]
-        WCbuttons = [('In-time hits','toggleShowIThits','toggleShowIThits', True),('Quality hits','toggleShowQhits','toggleShowQhits', True)]
-        ThreeDbuttons = [('show WC1','toggleShowWC1','toggleShowWC1', True),('show WC2','toggleShowWC2','toggleShowWC2', True),('isolate cluster','toggleIsolateClusters','toggleIsolateCluster', False)]
+
+        
+        WCbuttons = [('In-time hits','toggleShowIThits','toggleShowIThits', True),
+                     ('Quality hits','toggleShowQhits','toggleShowQhits', True),
+                         ('show rec tracks','toggleShowRecTracks','toggleShowRecTracks',True),
+                         ('show all tracks','toggleShowAllTracks','toggleShowAllTracks',False)]
+        FADCbuttons = [('show rec hits','toggleShowRecHits','toggleShowRecHits',True),
+                      ('show all hits','toggleShowAllHits','toggleShowAllHits',False)]
+        ThreeDbuttons = [('show WC1','toggleShowWC1','toggleShowWC1', True),
+                         ('show WC2','toggleShowWC2','toggleShowWC2', True),
+                         ('isolate cluster','toggleIsolateClusters','toggleIsolateCluster', False),
+                         ('use rec tracks','toggleShowRecTracks','toggleShowRecTracks',True),
+                         ('use all tracks','toggleShowAllTracks','toggleShowAllTracks',False)]
         
         
         
@@ -275,7 +292,7 @@ class TBEventDisplay:
         self.display = {}
         for pageName, constructor, buttons in [('WF traces', 'TracePlot(canvas)', WFbuttons),
                           ('ADC heatmap',   'ShashlikHeatmap(canvas)', None),
-                          ('ADC fibers', 'FiberADC(canvas)', None), 
+                          ('ADC fibers', 'FiberADC(canvas)', FADCbuttons), 
                           ('WF Noise', 'PedestalNoise(canvas)', None), 
                           ('Wire chambers', 'WCPlanes(canvas)', WCbuttons),
                           ('TDC timing','TDCtiming(canvas)', None),
@@ -332,7 +349,7 @@ class TBEventDisplay:
 
         #DEBUG
         # to debug a display uncomment next two lines
-        self.noteBook.SetPage('ADC heatmap')
+        self.noteBook.SetPage('Wire chambers')
         self.displayEvent()
         
     def __del__(self):
@@ -367,7 +384,7 @@ class TBEventDisplay:
         self.filename = filename
         self.util.filename = self.filename
         self.closeFile()		
-        self.reader = TBFileReader(filename)
+        self.reader = TBFileReader(filename, self.util)
         self.nevents= self.reader.entries()
         self.statusBar.SetText('events: %d' % self.nevents, 0)
         self.statusBar.SetText(self.filename[self.filename.rfind('/')+1:][-32:], 2)
@@ -381,6 +398,10 @@ class TBEventDisplay:
         self.util.tableY = self.reader.tableY
         self.statusBar.SetText('table(x, y) = (%d, %d) ' % (self.util.tableX, self.util.tableY), 1)
         self.filetime = time.ctime(os.path.getctime(filename))
+        for  e in range(len(self.wfelements)):
+            self.wfelements[e].SetText("Board "+str(self.util.boardNumbers[e]))
+            print "trying to rename button to ", "Board "+str(self.util.boardNumbers[e])
+            
 
         
     def refreshFile(self):
@@ -396,7 +417,7 @@ class TBEventDisplay:
             print "refreshing"
             eventNumber = self.eventNumber  
             #self.closeFile()	            
-            self.reader = TBFileReader(self.filename)
+            self.reader = TBFileReader(self.filename, self.util)
             self.nevents= self.reader.entries()
             self.statusBar.SetText('event: %d / %d' % (eventNumber, self.nevents-1), 0)
             self.filetime = time.ctime(os.path.getctime(self.filename))
@@ -538,33 +559,63 @@ class TBEventDisplay:
         self.shutterOpen = False
         self.debug("end:snapCanvas")
 
-    def toggleShowBoard112(self):
-            self.debug("begin:toggleShowBoard112")
-            self.util.showBoard112 = not self.util.showBoard112
-            self.redraw = True
-            self.displayEvent()
-            self.debug("end:toggleShowBoard112")
 
-    def toggleShowBoard115(self):
-            self.debug("begin:toggleShowBoard115")
-            self.util.showBoard115 = not self.util.showBoard115
-            self.redraw = True
-            self.displayEvent()
-            self.debug("end:toggleShowBoard115")
-            
-    def toggleShowBoard116(self):
-            self.debug("begin:toggleShowBoard116")
-            self.util.showBoard116 = not self.util.showBoard116
-            self.redraw = True
-            self.displayEvent()
-            self.debug("end:toggleShowBoard116")
+    def toggleShowBoard0(self):
+        self.debug("begin:toggleShowBoard0")
+        self.util.showBoard[0] = not self.util.showBoard[0]
+        self.redraw = True
+        self.displayEvent()
+        self.debug("end:toggleShowBoard0")
 
-    def toggleShowBoard117(self):
-            self.debug("begin:toggleShowBoard117")
-            self.util.showBoard117 = not self.util.showBoard117
+    def toggleShowBoard1(self):
+        self.debug("begin:toggleShowBoard1")
+        self.util.showBoard[1] = not self.util.showBoard[1]
+        self.redraw = True
+        self.displayEvent()
+        self.debug("end:toggleShowBoard1")
+
+    def toggleShowBoard2(self):
+        self.debug("begin:toggleShowBoard2")
+        self.util.showBoard[2] = not self.util.showBoard[2]
+        self.redraw = True
+        self.displayEvent()
+        self.debug("end:toggleShowBoard2")
+
+    def toggleShowBoard3(self):
+        self.debug("begin:toggleShowBoar3")
+        self.util.showBoard[3] = not self.util.showBoard[3]
+        self.redraw = True
+        self.displayEvent()
+        self.debug("end:toggleShowBoard3")
+        
+
+    def toggleShowRecHits(self):
+            self.debug("begin:toggleShowRecHits")
+            self.util.FADC_showRecHits = not self.util.FADC_showRecHits
             self.redraw = True
             self.displayEvent()
-            self.debug("end:toggleShowBoard117")
+            self.debug("end:FADC_showRecHits")
+
+    def toggleShowAllHits(self):
+            self.debug("begin:toggleShowAllHits")
+            self.util.FADC_showAllHits = not self.util.FADC_showAllHits
+            self.redraw = True
+            self.displayEvent()
+            self.debug("end:FADC_showAllHits")    
+
+    def toggleShowRecTracks(self):
+            self.debug("begin:toggleShowRecTracks")
+            self.util.showRecTracks = not self.util.showRecTracks
+            self.redraw = True
+            self.displayEvent()
+            self.debug("end:showRecTracks")
+
+    def toggleShowAllTracks(self):
+            self.debug("begin:toggleShowAllTracks")
+            self.util.showAllTracks = not self.util.showAllTracks
+            self.redraw = True
+            self.displayEvent()
+            self.debug("end:showAllTracks")  
 
     def toggleShowIThits(self):
         self.debug("begin:ShowIThits")
@@ -743,15 +794,15 @@ class TBEventDisplay:
             return
         
         self.refreshFile()
-
+        args = (self.reader.event(), self.reader.spill(), self.reader.rechits(), self.reader.tracks(), self.util)
         if '3D' not in page.name:
-            self.display[page.name].Draw(self.reader.event(), self.util)
+            self.display[page.name].Draw(*args)
         else:
-            self.display['ADC heatmap'].Draw(self.reader.event(), self.util)
+            self.display['ADC heatmap'].Draw(*args)
             self.util.stealthmode = True
-            self.display['Wire chambers'].Draw(self.reader.event(), self.util)
+            self.display['Wire chambers'].Draw(*args)
             self.util.stealthmode = False
-            self.display[page.name].Draw(self.reader.event(), self.util)
+            self.display[page.name].Draw(*args)
 
         print "displaying with self.util.eventNumber = "+str(self.util.eventNumber)
         self.redraw = False

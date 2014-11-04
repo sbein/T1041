@@ -24,9 +24,17 @@ class PadeHeader : public TObject{
       Packing format LNA [bits 1:0]  PGA [bits 3:2]  VGA [bits 15:4]
   **/
   UShort_t Gain() const {return _gain;}
-  UShort_t BoardID() const {return _boardID;}
-  UShort_t Events() const {return _events;}
+  UShort_t Lna() const {return _gain %  4;} 
+  UShort_t Pga() const {return (_gain % 16) / 4;} 
+  ULong_t Vga() const {return _gain / 16;} 
+
   Bool_t IsMaster() const {return _isMaster;}
+  UShort_t BoardID() const {return _boardID;}
+  Bool_t Status() const {return _status;}
+  Bool_t TrgStatus() const {return _trgStatus;}
+  Bool_t MemReg() const {return _memReg;}
+  Bool_t TrigPtr() const {return _trigPtr;}
+  UShort_t Events() const {return _events;}
   UShort_t PadeTemp() const {return _pTemp;}
   UShort_t SipmTemp() const {return _sTemp;}
 
@@ -79,7 +87,8 @@ class WCChannel : public TObject{
 class TBSpill : public TObject {
   ClassDef(TBSpill,1);  // Spill header info
  public:
- TBSpill(Int_t spillNumber=0, ULong64_t pcTime=0, Int_t nTrigWC=0, ULong64_t wcTime=0, 
+ TBSpill(Int_t spillNumber=0, ULong64_t pcTime=0, Int_t nTrigWC=0, ULong64_t wcTime=
+0, 
 	 Int_t pdgID=0, Float_t nomMomentum=0,
 	 Float_t tableX=-999, Float_t tableY=-999, Float_t angle=0, 
 	 Float_t boxTemp=0, Float_t roomTemp=0) : 
@@ -148,8 +157,10 @@ class TBEvent : public TObject {
   /// beginning of TBRun2b
   static const ULong64_t START_PORCH15=635421671607690753L;   
   /// More precise end of spill time reported
-  /** Mod of PADE WC Spill time stamp.  Previously, reported end of spill + PADE RO time.
-      Now end of spill time reported.  This is 0-1 seconds behind spill time reported by WC DAQ **/
+  /** Mod of PADE WC Spill time stamp.  Previously, reported end of spill + PADE RO 
+time.
+      Now end of spill time reported.  This is 0-1 seconds behind spill time reporte
+d by WC DAQ **/
   static const ULong64_t START_NEWWCSYNC=635432861909176340L;  
   static const ULong64_t END_TBEAM2=635440566331915360L;
   /// Swap out board 117 for board 16, preparing for H4 TB
@@ -162,7 +173,8 @@ class TBEvent : public TObject {
       14-Aug-2014 00:00
       16-Aug-2014 14:15
       Timestamp in .NET format is 100ns ticks from Jan 1, 0001 00:00:00
-      It is calculated using universal unix time (seconds since Jan 1, 1970 00:00:00) using
+      It is calculated using universal unix time (seconds since Jan 1, 1970 00:00:00
+) using
       timestamp = unixtime * 10000000 + 621355968000000000
   **/
   static const ULong64_t PULSESHAPE_T1=635424471000000000L;  

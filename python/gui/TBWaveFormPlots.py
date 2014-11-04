@@ -43,7 +43,7 @@ class TracePlot:
     def __del__(self):
         pass
 
-    def Draw(self, event, util):
+    def Draw(self, event, spill, rechits, tracks, util):
         #----------------------------------------------------------------------
         # fill
         #----------------------------------------------------------------------
@@ -72,7 +72,9 @@ class TracePlot:
         for ii in xrange(nchannels):
             channel  = event.GetPadeChan(ii)
             board = channel.GetBoardID()
-            boardwalk = [str(112*util.showBoard112),str(115*util.showBoard115),str(116*util.showBoard116),str(117*util.showBoard117)]
+            boardwalk = []
+            for b in range(4):
+                boardwalk.append(str(util.boardNumbers[b]*util.showBoard[b]))
             if not str(board) in boardwalk:
                 continue
             pedestal = channel.GetPedestal()

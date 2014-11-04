@@ -3,6 +3,8 @@
 
 #include <TH1F.h>
 #include "pulseShapeForFit.h"
+#include "TCanvas.h"
+#include "TROOT.h"
 
   // approximate sample times for board 112, 115, 116, 117  
   // !! too hacky, needs improvement
@@ -20,6 +22,7 @@ class PadeChannel : public TObject {
 
   // getters
   ULong64_t GetTimeStamp() {return _ts;}  ///< C# time in pade channel data
+  UInt_t GetEventNum() {return _eventnum;}
   UInt_t GetBoardID() {return _board_id;}
   UInt_t GetChannelNum() {return _ch_number;}
   UInt_t GetChannelID() {return _board_id*100+_ch_number;}
@@ -38,11 +41,12 @@ class PadeChannel : public TObject {
   Double_t GetPedSigma() {return _pedsigma;}
   Double_t GetAmplitude() {return _max-_ped;}
   void GetHist(TH1F* h);
+  TH1F* MakeHist();
   Bool_t LaserData(){return _status & kLaser;}
   static PulseFit FitPulse(PadeChannel *pc);
+  TF1 FitPulseFunc(PadeChannel *pc);
   int GetPorch(ULong64_t ts=0) const;
   void SetAsLaser();
-  
 
   static const Int_t N_PADE_DATA=120;     ///< fixed in FW
   static const Int_t N_PADE_PORCH=15;     ///< diagnostic info in data payload

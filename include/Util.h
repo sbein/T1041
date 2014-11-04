@@ -76,6 +76,15 @@ struct Util
   bool showBoard115;
   bool showBoard116;
   bool showBoard117;
+
+  bool FADC_showRecHits;
+  bool FADC_showAllHits;
+
+  bool showRecTracks;
+  bool showAllTracks;
+
+  std::vector<bool> showBoard;
+  std::vector<int> boardNumbers;
   
   std::vector<int> colorsDownstream;
   std::vector<int> colorsUpstream;

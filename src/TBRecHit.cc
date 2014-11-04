@@ -1,6 +1,23 @@
 #include "TBRecHit.h"
 #include "Mapper.h"
+#include <stdio.h>
+#include <stdlib.h>
 
+static const TString gainNameMap[4] = {"Low","Mid","High","VHigh"};
+static const Int_t CUTAMP_PLV_LOWLOW100  =  300;  static const Int_t CUTChi2_PLV_LOWLOW100  =   80;
+static const Int_t CUTAMP_PLV_LOWLOW200  = 9999;  static const Int_t CUTChi2_PLV_LOWLOW200  = 9999;
+static const Int_t CUTAMP_PLV_LOWLOW300  =  650;  static const Int_t CUTChi2_PLV_LOWLOW300  =  200;
+static const Int_t CUTAMP_PLV_LOWHIGH100 =  300;  static const Int_t CUTChi2_PLV_LOWHIGH100 =  300;
+static const Int_t CUTAMP_PLV_LOWHIGH200 = 9999;  static const Int_t CUTChi2_PLV_LOWHIGH200 = 9999;
+static const Int_t CUTAMP_PLV_LOWHIGH300 =  500;  static const Int_t CUTChi2_PLV_LOWHIGH300 =  500;
+static const Int_t CUTAMP_PLV_MIDLOW100  =  500;  static const Int_t CUTChi2_PLV_MIDLOW100  =   80;
+static const Int_t CUTAMP_PLV_MIDLOW200  = 9999;  static const Int_t CUTChi2_PLV_MIDLOW200  = 9999;
+static const Int_t CUTAMP_PLV_MIDLOW300  =  800;  static const Int_t CUTChi2_PLV_MIDLOW300  =  200;
+static const Int_t CUTAMP_PLV_MIDLOW500  = 1700;  static const Int_t CUTChi2_PLV_MIDLOW500  =  200;
+static const Int_t CUTAMP_PLV_MIDHIGH100 =  450;  static const Int_t CUTChi2_PLV_MIDHIGH100 =  300;
+static const Int_t CUTAMP_PLV_MIDHIGH200 =  700;  static const Int_t CUTChi2_PLV_MIDHIGH200 = 80;
+static const Int_t CUTAMP_PLV_MIDHIGH300 = 1200;  static const Int_t CUTChi2_PLV_MIDHIGH300 = 2000;
+static const Int_t CUTAMP_PLV_MIDHIGH500 = 1800;  static const Int_t CUTChi2_PLV_MIDHIGH500 = 2000;
 
 TBRecHit::TBRecHit(PadeChannel *pc, Float_t zsp, UInt_t options){
   nzsp=zsp;
@@ -110,3 +127,57 @@ void TBRecHit::Calibrate(vector<TBRecHit> *rechits, float *calconstants){
     (rechits->at(i)).Calibrate(calconstants);
 }
 
+
+
+Bool_t TBRecHit::GoodPulse(PadeChannel* pc, UShort_t pga, UShort_t lna, ULong_t vga) {
+
+  bool isGood_ = true;
+  double max = 9999; double chi2 = 99999; double ndof = 1;
+
+  int nSigmaCut=30;
+  Init(pc, nSigmaCut);
+  if (!(Status() && kZSP))
+    {
+      max = pc->GetMaxCalib();
+      chi2= Chi2();
+      ndof= Ndof();
+    }
+
+  //  PadeChannel TBRecHit::GetPade(){
+  //  return pc
+
+  TString Pga = gainNameMap[pga];  TString Lna = gainNameMap[lna]; 
+  TString Vga=TString::Itoa(vga,16);
+  TString pga_lna_vga = Pga+"_"+Lna+"_"+Vga;
+  cout << "pga="<<pga<< " lna="<<lna<< " vga="<<vga<<endl;
+  cout << "pga_lna_vga is "<< pga_lna_vga<<endl;
+  if      (pga_lna_vga=="LOW_LOW_100")
+    isGood_ = max < CUTAMP_PLV_LOWLOW100 && 1.0*chi2/ndof < CUTChi2_PLV_LOWLOW100;
+  else if (pga_lna_vga=="LOW_LOW_200")
+    isGood_ = max < CUTAMP_PLV_LOWLOW200 && 1.0*chi2/ndof < CUTChi2_PLV_LOWLOW200;
+  else if (pga_lna_vga=="LOW_LOW_300")
+    isGood_ = max < CUTAMP_PLV_LOWLOW300 && 1.0*chi2/ndof < CUTChi2_PLV_LOWLOW300;
+  else if (pga_lna_vga=="LOW_HIGH_100")
+    isGood_ = max < CUTAMP_PLV_LOWHIGH100 && 1.0*chi2/ndof < CUTChi2_PLV_LOWHIGH100;
+  else if (pga_lna_vga=="LOW_HIGH_200")
+    isGood_ = max < CUTAMP_PLV_LOWHIGH200 && 1.0*chi2/ndof < CUTChi2_PLV_LOWHIGH200;
+  else if (pga_lna_vga=="LOW_HIGH_300")
+    isGood_ = max < CUTAMP_PLV_LOWHIGH300 && 1.0*chi2/ndof < CUTChi2_PLV_LOWHIGH300;
+  else if (pga_lna_vga=="MID_LOW_100")
+    isGood_ = max < CUTAMP_PLV_MIDLOW100 && 1.0*chi2/ndof < CUTChi2_PLV_MIDLOW100;
+  else if (pga_lna_vga=="MID_LOW_200")
+    isGood_ = max < CUTAMP_PLV_MIDLOW200 && 1.0*chi2/ndof < CUTChi2_PLV_MIDLOW200;
+  else if (pga_lna_vga=="MID_LOW_300")
+    isGood_ = max < CUTAMP_PLV_MIDLOW300 && 1.0*chi2/ndof < CUTChi2_PLV_MIDLOW300;
+  else if (pga_lna_vga=="MID_LOW_500")
+    isGood_ = max < CUTAMP_PLV_MIDLOW500 && 1.0*chi2/ndof < CUTChi2_PLV_MIDLOW500;
+  else if (pga_lna_vga=="MID_HIGH_100")
+    isGood_ = max < CUTAMP_PLV_MIDHIGH100 && 1.0*chi2/ndof < CUTChi2_PLV_MIDHIGH100;
+  else if (pga_lna_vga=="MID_HIGH_200")
+    isGood_ = max < CUTAMP_PLV_MIDHIGH200 && 1.0*chi2/ndof < CUTChi2_PLV_MIDHIGH200;
+  else if (pga_lna_vga=="MID_HIGH_300")
+    isGood_ = max < CUTAMP_PLV_MIDHIGH300 && 1.0*chi2/ndof < CUTChi2_PLV_MIDHIGH300;
+  else if (pga_lna_vga=="MID_HIGH_500")
+    isGood_ = max < CUTAMP_PLV_MIDHIGH500 && 1.0*chi2/ndof < CUTChi2_PLV_MIDHIGH500;
+  return isGood_;
+}

@@ -11,7 +11,7 @@ class TDCtiming:
     def __del__(self):
         pass
 
-    def Draw(self, event, util):
+    def Draw(self, event, spill, rechits, tracks, util):
         tdcWorkHorse(self, self.canvas, event, util)
 
 

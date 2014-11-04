@@ -9,6 +9,8 @@
 #include <TObject.h>
 #include <ostream>
 #include <vector>
+#include <stdlib.h>
+
 
 using std::vector;
 
@@ -66,6 +68,7 @@ class TBRecHit : public TObject {
   UInt_t Status() const {return status;}  ///< status word
   void SetOptNoFit() {status&=kNoFit;}  ///< not implemented
   bool IsCalibrated() const {return status&kCalibrated;} 
+  Bool_t GoodPulse(PadeChannel* pc, UShort_t pga, UShort_t lna, ULong_t vga);
   Float_t CalFactor() const {return cfactor;} ///< return cailbration factor
   void Calibrate(float *calconstants); ///< apply calibration from array
  ///< calibrate all rechits 
@@ -90,6 +93,7 @@ class TBRecHit : public TObject {
 };
 	       
 std::ostream& operator<<(std::ostream& s, const TBRecHit& hit);
+
 
 #endif
 

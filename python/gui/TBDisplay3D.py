@@ -50,7 +50,7 @@ class Display3D:
     #----------------------------------------------------------------------
     # Draw hits
     #----------------------------------------------------------------------
-    def Draw(self, event, util):	
+    def Draw(self, event, spill, rechits, tracks, util):	
         
         elements = self.page.elements
 

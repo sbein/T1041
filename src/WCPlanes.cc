@@ -119,7 +119,7 @@ void WCPlanes::GetWCMeans(string meanfile, int *tLow_, int *mean_, int *tHigh_){
 
 }
 
-void WCPlanes::Draw(TBEvent* event, Util& util)
+void WCPlanes::Draw(TBEvent* event, TBSpill* spill, std::vector<TBRecHit>* rechits, std::vector<TBTrack>* tracks, Util& util)
 {
   if (isFirstEvent){
     c1->Divide(2,1);
@@ -135,6 +135,10 @@ void WCPlanes::Draw(TBEvent* event, Util& util)
     Scint2->Reset();
   }
     
+  util.x1hit = 64;
+  util.y1hit = 64;
+  util.x2hit = 64;
+  util.y2hit = 64;
   GetWCMeans("meanfile.txt", tLow, mean, tHigh);
 
   hitsX1=event->GetWChitsX(1,tLow,tHigh);   // fetch x,y hits in chambers 1 and 2
@@ -142,41 +146,71 @@ void WCPlanes::Draw(TBEvent* event, Util& util)
   hitsX2=event->GetWChitsX(2,tLow,tHigh);
   hitsY2=event->GetWChitsY(2,tLow,tHigh);
   
-
-  util.x1hit = 64;
-  util.y1hit = 64;
-  util.x2hit = 64;
-  util.y2hit = 64;
-
-  double m2d = 99999;
-  for(unsigned h1=0; h1<hitsX1.size(); ++h1)
-    { // loop over X1 
-      for(unsigned h2=0; h2<hitsY1.size(); ++h2){ // loop over Y1
-	for(unsigned h3=0; h3<hitsX2.size(); ++h3){ // loop over X2 
-	  for(unsigned h4=0; h4<hitsY2.size(); ++h4){ // loop over Y2
-	    TBTrack multiTrack(hitsX1[h1], hitsY1[h2], hitsX2[h3], hitsY2[h4]);
-	    float trackX, trackY;
-	    multiTrack.Project(zSC1, trackX, trackY);
-	    if(fabs(trackX)>50 || fabs(trackY)>50)continue;
-	    Scint1->Fill(trackX, trackY, 1);
-	    multiTrack.Project(zSC2, trackX, trackY);
-	    if(fabs(trackX)>50 || fabs(trackY)>50)continue;
-	    Scint2->Fill(trackX, trackY, 1);
-	    multiTrack.Project(zWC1, trackX, trackY);
-	    double m2d_ = sqrt(pow(multiTrack.GetSlopeX(),2) + pow(multiTrack.GetSlopeY(),2));
-	    if (!(m2d_ < m2d)) 
-	      continue;
-	    m2d = m2d_;
-	    WC1_Beam->Fill(trackX, trackY, 1);
-	    util.x1hit = trackX;
-	    util.y1hit = trackY;
-	    multiTrack.Project(zWC2, trackX, trackY);
-	    WC2_Beam->Fill(trackX, trackY, 1);
-	    util.x2hit = trackX;
-	    util.y2hit = trackY;   
+  cout << "length of tracks is"<< tracks->size()<<endl;
+  if (util.showRecTracks)
+    {
+      cout << "entered rec tracks"<<endl;
+      double m2d = 99999;
+      for(unsigned int trk = 0; trk<tracks->size(); trk++)
+	{
+	  TBTrack track = tracks->at(trk);
+	  float trackX, trackY;
+	  track.Project(zSC1, trackX, trackY);
+	  if(fabs(trackX)>50 || fabs(trackY)>50)continue;
+	  Scint1->Fill(trackX, trackY, 1);
+	  track.Project(zSC2, trackX, trackY);
+	  if(fabs(trackX)>50 || fabs(trackY)>50)continue;
+	  Scint2->Fill(trackX, trackY, 1);
+	  track.Project(zWC1, trackX, trackY);
+	  double m2d_ = sqrt(pow(track.GetSlopeX(),2) + pow(track.GetSlopeY(),2));
+	  cout <<"md2 is"<<m2d<<endl;
+	  if (!(m2d_ < m2d)) 
+	    continue;
+	  m2d = m2d_;
+	  cout <<"first made it to m2d"<<m2d<<endl;
+	  WC1_Beam->Fill(trackX, trackY, 1);
+	  util.x1hit = trackX;
+	  util.y1hit = trackY;
+	  track.Project(zWC2, trackX, trackY);
+	  WC2_Beam->Fill(trackX, trackY, 1);
+	  util.x2hit = trackX;
+	  util.y2hit = trackY;   
+	}
+    }
+  if(util.showAllTracks)
+    { 
+      cout << "entered all tracks"<<endl;
+      double m2d = 99999;
+      for(unsigned h1=0; h1<hitsX1.size(); ++h1)
+	{ // loop over X1 
+	  for(unsigned h2=0; h2<hitsY1.size(); ++h2){ // loop over Y1
+	    for(unsigned h3=0; h3<hitsX2.size(); ++h3){ // loop over X2 
+	      for(unsigned h4=0; h4<hitsY2.size(); ++h4){ // loop over Y2
+		TBTrack multiTrack(hitsX1[h1], hitsY1[h2], hitsX2[h3], hitsY2[h4]);
+		float trackX, trackY;
+		multiTrack.Project(zSC1, trackX, trackY);
+		if(fabs(trackX)>50 || fabs(trackY)>50)continue;
+		Scint1->Fill(trackX, trackY, 1);
+		multiTrack.Project(zSC2, trackX, trackY);
+		if(fabs(trackX)>50 || fabs(trackY)>50)continue;
+		Scint2->Fill(trackX, trackY, 1);
+		multiTrack.Project(zWC1, trackX, trackY);
+		double m2d_ = sqrt(pow(multiTrack.GetSlopeX(),2) + pow(multiTrack.GetSlopeY(),2));
+		if (!(m2d_ < m2d)) 
+		  continue;
+		m2d = m2d_;
+		cout <<"then made it to m2d"<<m2d<<endl;
+		WC1_Beam->Fill(trackX, trackY, 1);
+		util.x1hit = trackX;
+		util.y1hit = trackY;
+		multiTrack.Project(zWC2, trackX, trackY);
+		WC2_Beam->Fill(trackX, trackY, 1);
+		util.x2hit = trackX;
+		util.y2hit = trackY;   
+	      }
+	    }
 	  }
 	}
-      }
     }
 
   util.WC1Xallhits.clear();

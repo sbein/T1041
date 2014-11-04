@@ -89,6 +89,17 @@ void PadeChannel::GetHist(TH1F *h){
   h->SetStats(0);
 }
 
+/////
+
+TH1F* PadeChannel::MakeHist(){
+  TH1F* h = new TH1F();
+  GetHist(h);
+  return h;
+}
+////
+
+
+
 void PadeChannel::GetXYZ(double &x, double &y, double &z){
   Mapper *mapper=Mapper::Instance(_ts);
   mapper->ChannelXYZ(GetChannelID(),x,y,z);
@@ -255,6 +266,15 @@ PulseFit PadeChannel::FitPulse(PadeChannel *pc){
   return result;
 }
 
+
+
+TF1 PadeChannel::FitPulseFunc(PadeChannel *pc){ 
+  PulseFit fit = PadeChannel::FitPulse(pc);
+  return fit.func;
+  
+}
+
+
 // WARNING: not really calibrated!  Just PED subtracted
 // kept around for compatibility w/ event display
 float PadeChannel::GetMaxCalib(){
@@ -269,7 +289,6 @@ int PadeChannel::GetPorch(ULong64_t ts) const{
   else if (tbrun<TBEvent::TBRun2a) return 32;
   else return 15;
 }
-
 
 void PadeChannel::SetAsLaser() {_status|=kLaser;}
 

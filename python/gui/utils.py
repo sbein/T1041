@@ -244,7 +244,10 @@ class NoteBook(TGTab):
 									hotstring=hstr,
 									method=meth,
 									text=txt))
+                                print "just added button", element.buttonlist[-1]
                  		element.buttonlist[-1].SetState(state)
+                                if "Board" in hstr:
+                                     self.object.wfelements.append(element.buttonlist[-1])
 
 		element.hframe  = TGHorizontalFrame(element.tab, 1, 1)
 		element.tab.AddFrame(element.hframe, TOP_X_Y)

@@ -3,6 +3,7 @@
 #include "TBEvent.h"
 #include "TCanvas.h"
 #include "TBTrack.h"
+#include "TBRecHit.h"
 #include <TH2.h>
 #include "THStack.h"
 #include "Util.h"
@@ -12,7 +13,7 @@ class WCPlanes{
   WCPlanes();
   WCPlanes(TCanvas* canvas);
   ~WCPlanes();
-  void Draw(TBEvent* event, Util& util);
+  void Draw(TBEvent* event, TBSpill* spill, std::vector<TBRecHit>* rechits, std::vector<TBTrack>* tracks, Util& util);
   void GetWCMeans(string meanfile, int *tLow, int *mean, int *tHigh);
   void CacheWCMeans(string meanfile, string rootfilename);
 

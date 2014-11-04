@@ -4,6 +4,8 @@ from time import sleep
 from TBUtils import *
 import gui.utils
 
+Nsmp = PadeChannel.N_PADE_SAMPLES / 2
+Nch = 128
 
 class FiberADC:
 	def __init__(self, canvas):
@@ -11,12 +13,12 @@ class FiberADC:
 	def __del__(self):
 		pass
 
-	def Draw(self, event, util):
-		MakePlots(self, self.canvas, event, util)
+	def Draw(self, event, spill, rechits, tracks, util):
+		MakePlots(self, self.canvas, event, rechits, util)
 
         
 		
-def MakePlots(object, c1, event, util):
+def MakePlots(object, c1, event, rechits, util):
     try:
         o = object.hMapADCvsFiber
         p = object.hMapCHI2vsFiber
@@ -29,9 +31,9 @@ def MakePlots(object, c1, event, util):
         c1.GetPad(1).SetLogz()
         c1.GetPad(1).SetLogy()
 
-        object.hMapADCvsFiber = TH2F('hMapADCfiber','ADC Samples Vs. Channel', 128,0,128,3000,0,3000)
+        object.hMapADCvsFiber = TH2F('hMapADCfiber','ADC Samples Vs. Channel', Nch,0,Nch,3000,0,3000)
         
-        object.hMapCHI2vsFiber = TH2F('hMapADCvsFiber','Chi2 Vs. Channel', 128,0,128,25,0,10000)
+        object.hMapCHI2vsFiber = TH2F('hMapADCvsFiber','Chi2 Vs. Channel', Nch,0,Nch,25,0,1000)
         HistoSamStyle(object.hMapADCvsFiber)
         HistoSamStyle(object.hMapCHI2vsFiber)
 
@@ -43,17 +45,38 @@ def MakePlots(object, c1, event, util):
         hMapCHI2vsFiber.Reset()
 
 
-    hit = TBRecHit()
-    nSigmaCut=10
-    for i in range(0,128):
-            pade = event.GetPadeChan(i)
-            hit.Init(pade, nSigmaCut)
+    print "size of rechits is ", rechits.size()
+    if util.FADC_showRecHits:
+        for rh in range(rechits.size()):
+            pid = rechits[rh].ChannelIndex()
+            for ch in range(0,Nch):
+                pade = event.GetPadeChan(ch)
+                pid2 = pade.GetChannelIndex()
+                if pid2==pid:
+                    chyes = ch
+                    break
             for iwf in range(0,60):
-                    number = pade.GetWform()[iwf] - pade.GetPedestal()
-                    hMapADCvsFiber.Fill(i,number)
+                number = pade.GetWform()[iwf] - pade.GetPedestal()
+                hMapADCvsFiber.Fill(pid,number)
+            chi2= min(999,rechits[rh].Chi2())
+            ndof = rechits[rh].Ndof()
+            hMapCHI2vsFiber.Fill(pid,chi2/ndof)
+
+    if util.FADC_showAllHits:
+        hit = TBRecHit()
+        nSigmaCut=1
+        for ch in range(0,Nch):
+            pade = event.GetPadeChan(ch)
+            pid = pade.GetChannelIndex()
+            hit.Init(pade, nSigmaCut)
             if not (hit.Status() and TBRecHit.kZSP):
-                chi2= min(9999,hit.Chi2())
-                hMapCHI2vsFiber.Fill(i,chi2)
+                for iwf in range(0,60):
+                    number = pade.GetWform()[iwf] - pade.GetPedestal()
+                    hMapADCvsFiber.Fill(pid,number)
+                chi2= min(999,hit.Chi2())
+                ndof = hit.Ndof()
+                if (ndof!=0):
+                    hMapCHI2vsFiber.Fill(pid,1.0*chi2/ndof)
         
 
     if not util.stealthmode:

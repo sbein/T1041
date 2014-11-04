@@ -14,7 +14,7 @@ NTDC = 16
 gSystem.Load("libTB.so")
 #------------------------------------------------------------------------------
 class TBFileReader:
-    def __init__(self, filename, treename='t1041'):
+    def __init__(self, filename, util, treename='t1041'):
         print 'initialized TBFileReader'
         if not os.path.exists(filename):
             print "** TBFileReader: can't find file %s" % filename
@@ -29,12 +29,26 @@ class TBFileReader:
             sys.exit(0)
         self.nevents = self.t.GetEntries()
         self.e = TBEvent() 
-        self.t.SetBranchAddress('tbevent', AddressOf(self.e))
         self.s = TBSpill()
+        self.h = std.vector('TBRecHit')(10)
+        self.tk = std.vector('TBTrack')(10)
+        self.t.SetBranchAddress('tbevent', AddressOf(self.e))
         self.t.SetBranchAddress('tbspill', AddressOf(self.s))
+        self.t.SetBranchAddress('tbrechits', AddressOf(self.h))
+        self.t.SetBranchAddress('tbtracks', AddressOf(self.tk))
+        print "guessing this worked"
         self.t.GetEntry(0)
+        print "guessing this didn't"
         self.tableX = self.s.GetTableX()
         self.tableY = self.s.GetTableY()
+        blist = []
+        for ch in range(128):
+            pade = self.e.GetPadeChan(ch)
+            bid = pade.GetBoardID()
+            if not bid in blist:
+                blist.append(bid)
+        for b in blist:
+            util.boardNumbers.push_back(b)
         self.s.Dump()
         
     def __del__(self):
@@ -58,9 +72,17 @@ class TBFileReader:
             return
         self.t.GetEntry(ii)
 
-
     def event(self):
         return self.e
+
+    def spill(self):
+        return self.s
+
+    def tracks(self):
+        return self.tk
+
+    def rechits(self):
+        return self.h
 
 
     def maxPadeADC(self):
