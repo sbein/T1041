@@ -4,20 +4,21 @@
 #include <stdlib.h>
 
 static const TString gainNameMap[4] = {"Low","Mid","High","VHigh"};
-static const Int_t CUTAMP_PLV_LOWLOW100  =  300;  static const Int_t CUTChi2_PLV_LOWLOW100  =   80;
+static const Int_t CUTAMP_PLV_LOWLOW100  =  350;  static const Int_t CUTChi2_PLV_LOWLOW100  =  100;
 static const Int_t CUTAMP_PLV_LOWLOW200  = 9999;  static const Int_t CUTChi2_PLV_LOWLOW200  = 9999;
-static const Int_t CUTAMP_PLV_LOWLOW300  =  650;  static const Int_t CUTChi2_PLV_LOWLOW300  =  200;
-static const Int_t CUTAMP_PLV_LOWHIGH100 =  300;  static const Int_t CUTChi2_PLV_LOWHIGH100 =  300;
+static const Int_t CUTAMP_PLV_LOWLOW300  =  700;  static const Int_t CUTChi2_PLV_LOWLOW300  = 1000;
+static const Int_t CUTAMP_PLV_LOWHIGH100 =  350;  static const Int_t CUTChi2_PLV_LOWHIGH100 =  350;
 static const Int_t CUTAMP_PLV_LOWHIGH200 = 9999;  static const Int_t CUTChi2_PLV_LOWHIGH200 = 9999;
 static const Int_t CUTAMP_PLV_LOWHIGH300 =  500;  static const Int_t CUTChi2_PLV_LOWHIGH300 =  500;
-static const Int_t CUTAMP_PLV_MIDLOW100  =  500;  static const Int_t CUTChi2_PLV_MIDLOW100  =   80;
+static const Int_t CUTAMP_PLV_MIDLOW100  =  500;  static const Int_t CUTChi2_PLV_MIDLOW100  =  300;
 static const Int_t CUTAMP_PLV_MIDLOW200  = 9999;  static const Int_t CUTChi2_PLV_MIDLOW200  = 9999;
-static const Int_t CUTAMP_PLV_MIDLOW300  =  800;  static const Int_t CUTChi2_PLV_MIDLOW300  =  200;
-static const Int_t CUTAMP_PLV_MIDLOW500  = 1700;  static const Int_t CUTChi2_PLV_MIDLOW500  =  200;
+static const Int_t CUTAMP_PLV_MIDLOW300  =  800;  static const Int_t CUTChi2_PLV_MIDLOW300  = 900;
+static const Int_t CUTAMP_PLV_MIDLOW500  = 1700;  static const Int_t CUTChi2_PLV_MIDLOW500  = 1100;
 static const Int_t CUTAMP_PLV_MIDHIGH100 =  450;  static const Int_t CUTChi2_PLV_MIDHIGH100 =  300;
-static const Int_t CUTAMP_PLV_MIDHIGH200 =  700;  static const Int_t CUTChi2_PLV_MIDHIGH200 = 80;
-static const Int_t CUTAMP_PLV_MIDHIGH300 = 1200;  static const Int_t CUTChi2_PLV_MIDHIGH300 = 2000;
+static const Int_t CUTAMP_PLV_MIDHIGH200 =  700;  static const Int_t CUTChi2_PLV_MIDHIGH200 = 1100;
+static const Int_t CUTAMP_PLV_MIDHIGH300 = 1200;  static const Int_t CUTChi2_PLV_MIDHIGH300 = 4000;
 static const Int_t CUTAMP_PLV_MIDHIGH500 = 1800;  static const Int_t CUTChi2_PLV_MIDHIGH500 = 2000;
+
 
 TBRecHit::TBRecHit(PadeChannel *pc, Float_t zsp, UInt_t options){
   nzsp=zsp;
